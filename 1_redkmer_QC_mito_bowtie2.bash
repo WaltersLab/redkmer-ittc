@@ -1,15 +1,17 @@
 #!/bin/bash
-#PBS -N redkmer1
-#PBS -l walltime=70:00:00
-#PBS -l select=1:ncpus=24:mem=32gb:tmpspace=400gb
-#PBS -e /work/nikiwind/
-#PBS -o /work/nikiwind/
+#SBATCH -J redkmer1
+#SBATCH -t 70:00:00
+#SBATCH -c 20
+#SBATCH --mem=32G
+#SBATCH -e /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_error.log
+#SBATCH -o /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_output.log
 
 echo "========== starting up step 1 =========="
 
-source $PBS_O_WORKDIR/redkmer.cfg
-module load bowtie/2.2.9
-module load samtools
+source $SLURM_SUBMIT_DIR/redkmer.cfg
+module load Bowtie2/2.2.9
+module load SAMtools
+module load slurm-torque
 
 echo "========== setting up directories =========="
 
@@ -17,7 +19,7 @@ mkdir -p $CWD/qsubscripts
 mkdir -p $CWD/QualityReports
 mkdir -p $CWD/plots
 mkdir -p $CWD/MitoIndex
-mkdir -p $CWD/reports
+#mkdir -p $CWD/reports
 
 echo "========== filtering pacBio libary by read length =========="
 
@@ -34,14 +36,15 @@ echo "========== filtering for mitochondiral reads =========="
 
 cat > ${CWD}/qsubscripts/femalemito.bashX <<EOF
 #!/bin/bash
-#PBS -N redkmer_f_mito
-#PBS -l walltime=20:00:00
-#PBS -l select=1:ncpus=24:mem=32gb:tmpspace=700gb
-#PBS -e ${CWD}/reports
-#PBS -o ${CWD}/reports
+#SBATCH -J redkmer_f_mito
+#SBATCH -t 20:00:00
+#SBATCH -c 20
+#SBATCH --mem=32G
+#SBATCH -e ${CWD}/reports/%j_error.log
+#SBATCH -o ${CWD}/reports/%j_output.log
 
-module load bowtie/2.2.9
-module load fastqc
+module load Bowtie2/2.2.9
+module load FastQC
 
 cp ${illDIR}/raw_f.fastq XXXXX/raw_f.fastq
 echo "========== producing quality report for female illumina library =========="
@@ -55,14 +58,15 @@ qsub ${CWD}/qsubscripts/femalemito.bash
 
 cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 #!/bin/bash
-#PBS -N redkmer_m_mito
-#PBS -l walltime=20:00:00
-#PBS -l select=1:ncpus=24:mem=32gb:tmpspace=700gb
-#PBS -e ${CWD}/reports
-#PBS -o ${CWD}/reports
+#SBATCH -J redkmer_m_mito
+#SBATCH -t 20:00:00
+#SBATCH -c 20
+#SBATCH --mem=32G
+#SBATCH -e ${CWD}/reports/%j_error.log
+#SBATCH -o ${CWD}/reports/%j_output.log
 
-module load bowtie/2.2.9
-module load fastqc
+module load Bowtie2/2.2.9
+module load FastQC
 
 cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
 echo "========== producing quality report for male illumina library =========="
@@ -70,6 +74,7 @@ $FASTQC XXXXX/raw_m.fastq -o ${CWD}/QualityReports
 echo "========== removing male illumina reads mapping to mitochondrial DNA =========="
 $BOWTIE2 -p $CORES -x $CWD/MitoIndex/MtRef_bowtie2 -U XXXXX/raw_m.fastq --un XXXXX/m.fastq 1>/dev/null 2> ${illDIR}/m_bowtie2.log
 cp XXXXX/m.fastq ${illDIR}
+rm -rf XXXXX 
 EOF
 sed 's/XXXXX/$TMPDIR/g' ${CWD}/qsubscripts/malemito.bashX > ${CWD}/qsubscripts/malemito.bash
 qsub ${CWD}/qsubscripts/malemito.bash

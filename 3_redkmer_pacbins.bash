@@ -1,12 +1,13 @@
 #!/bin/bash
-#PBS -N redkmer3
-#PBS -l walltime=24:00:00
-#PBS -l select=1:ncpus=24:mem=120gb:tmpspace=650gb
-#PBS -e /work/nikiwind/
-#PBS -o /work/nikiwind/
+#SBATCH -J redkmer3
+#SBATCH -t 24:00:00
+#SBATCH -c 20
+#SBATCH --mem=120G
+#SBATCH -e /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_error.log
+#SBATCH -o /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_output.log
 
-source $PBS_O_WORKDIR/redkmer.cfg
-module load samtools
+source $SLURM_SUBMIT_DIR/redkmer.cfg
+module load SAMtools
 
 printf "======= merge all pacbio mappings  =======\n"
 
@@ -113,6 +114,7 @@ cat $CWD/pacBio_bins/X_reads | xargs $SAMTOOLS faidx $pacM > $CWD/pacBio_bins/fa
 cat $CWD/pacBio_bins/A_reads | xargs $SAMTOOLS faidx $pacM > $CWD/pacBio_bins/fasta/Abin.fasta
 cat $CWD/pacBio_bins/Y_reads | xargs $SAMTOOLS faidx $pacM > $CWD/pacBio_bins/fasta/Ybin.fasta
 cat $CWD/pacBio_bins/GA_reads | xargs $SAMTOOLS faidx $pacM > $CWD/pacBio_bins/fasta/GAbin.fasta
+rm -rf $TMPDIR
 
 echo "==================================== Done step 3! ======================================="
 		

@@ -1,11 +1,13 @@
 #!/bin/bash
-#PBS -N redkmer2
-#PBS -l walltime=04:00:00
-#PBS -l select=1:ncpus=12:mem=32gb:tmpspace=700gb
-#PBS -e /work/nikiwind/
-#PBS -o /work/nikiwind/
+#SBATCH -J redkmer2
+#SBATCH -t 04:00:00
+#SBATCH -c 12
+#SBATCH --mem=32G
+#SBATCH -e /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_error.log 
+#SBATCH -o /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_output.log
 
-source $PBS_O_WORKDIR/redkmer.cfg
+source $SLURM_SUBMIT_DIR/redkmer.cfg
+module load slurm-torque
 
 mkdir -p $CWD/pacBio_illmapping
 mkdir -p $CWD/pacBio_illmapping/logs
@@ -52,51 +54,55 @@ echo "==================================== Done step 2A! =======================
 
 cat > ${CWD}/qsubscripts/pacbins.bashX <<EOF
 #!/bin/bash
-#PBS -N redkmer2B
-#PBS -l walltime=18:00:00
-#PBS -l select=1:ncpus=12:mem=32gb:tmpspace=890gb
-#PBS -e ${CWD}/reports
-#PBS -o ${CWD}/reports
-#PBS -J 1-${NODES}
+#SBATCH -J redkmer2B
+#SBATCH -t 18:00:00
+#SBATCH -c 12
+#SBATCH --mem=32G
+#SBATCH -e ${CWD}/reports/%j_error.log
+#SBATCH -o ${CWD}/reports/%j_output.log
+#SBATCH --array=1-${NODES}
 
-source $PBS_O_WORKDIR/redkmer.cfg
+source $SLURM_SUBMIT_DIR/redkmer.cfg
 
-module load bowtie/1.1.1
-module load intel-suite
+module load Bowtie/1.1.2
+module load GCC/6.2.0-2.27
 
-	echo "==================================== Indexing chunk XXXXX{PBS_ARRAY_INDEX} ======================================="
-		cp ${pacDIR}/XXXXX{PBS_ARRAY_INDEX}_m_pac.fasta XXXXXTMPDIR
-		$BOWTIEB XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_m_pac.fasta XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_m_pac
+	echo "==================================== Indexing chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
+		cp ${pacDIR}/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR
+		$BOWTIEB XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac
 	echo "==================================== make counting tool ======================================="	
-		cp ${BASEDIR}/Cscripts/* XXXXXTMPDIR
-		make
+		#cp ${BASEDIR}/Cscripts/* XXXXXTMPDIR
+		#make
 
-	echo "==================================== Working on male chunk XXXXX{PBS_ARRAY_INDEX} ======================================="
+	echo "==================================== Working on male chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
 		cp $illM XXXXXTMPDIR
-		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/m.fastq 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{PBS_ARRAY_INDEX}_male_log.txt
+		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/m.fastq 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
 		rm XXXXXTMPDIR/m.fastq
-	echo "==================================== Counting, sorting for male chunck XXXXX{PBS_ARRAY_INDEX} ===================================="
-		./count XXXXXTMPDIR/male.txt > XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_male_uniq
-		cp XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_male_uniq $CWD/pacBio_illmapping/mapping_rawdata/
-		rm XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_male_uniq
-	echo "==================================== Done male chunk XXXXX{PBS_ARRAY_INDEX} ! ===================================="
+	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
+		${BASEDIR}/Cscripts/count XXXXXTMPDIR/male.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
+		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq $CWD/pacBio_illmapping/mapping_rawdata/
+		rm XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
+	echo "==================================== Done male chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ===================================="
 
-	echo "==================================== Working on female chunk XXXXX{PBS_ARRAY_INDEX} ======================================="
+	echo "==================================== Working on female chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
 		cp $illF XXXXXTMPDIR
-		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/f.fastq 1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{PBS_ARRAY_INDEX}_female_log.txt
+		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/f.fastq 1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
 		rm XXXXXTMPDIR/f.fastq
-	echo "==================================== Counting, sorting for male chunck XXXXX{PBS_ARRAY_INDEX} ===================================="
-		./count XXXXXTMPDIR/female.txt > XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_female_uniq
-		cp XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
-		rm XXXXXTMPDIR/XXXXX{PBS_ARRAY_INDEX}_female_uniq
-	echo "==================================== Done female chunk XXXXX{PBS_ARRAY_INDEX} ! ===================================="
+	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
+		${BASEDIR}/Cscripts/count XXXXXTMPDIR/female.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq
+		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
+		rm XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq
+		rm -rf XXXXXTMPDIR 
+	echo "==================================== Done female chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ===================================="
 
 
-echo "==================================== Done step 2B chunk XXXXX{PBS_ARRAY_INDEX} ! ======================================="
+echo "==================================== Done step 2B chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ======================================="
 
 EOF
 sed 's/XXXXX/$/g' ${CWD}/qsubscripts/pacbins.bashX > ${CWD}/qsubscripts/pacbins.bash
 
 qsub ${CWD}/qsubscripts/pacbins.bash
+
+rm -rf $TMPDIR
 
 echo "==================================== Done step 2B! ======================================="
