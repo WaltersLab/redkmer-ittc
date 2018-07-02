@@ -3,8 +3,8 @@
 #SBATCH -t 24:00:00
 #SBATCH -c 20
 #SBATCH --mem=120G
-#SBATCH -e /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/_33_error.log
-#SBATCH -o /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/_33_output.log
+#SBATCH -e ${CWD}/reports/redkmer31_%j_error.log
+#SBATCH -o ${CWD}/reports/redkmer31_%j_output.log
 
 source $SLURM_SUBMIT_DIR/redkmer.cfg
 module load SAMtools

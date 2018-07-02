@@ -3,8 +3,8 @@
 #SBATCH -t 04:00:00
 #SBATCH -c 12
 #SBATCH --mem=32G
-#SBATCH -e /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_error.log 
-#SBATCH -o /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_output.log
+#SBATCH -e ${CWD}/reports/redkmer2_%j_error.log
+#SBATCH -o ${CWD}/reports/redkmer2_%j_output.log
 
 source $SLURM_SUBMIT_DIR/redkmer.cfg
 module load slurm-torque

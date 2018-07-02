@@ -3,8 +3,8 @@
 #SBATCH -t 70:00:00
 #SBATCH -c 20
 #SBATCH --mem=32G
-#SBATCH -e /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_error.log
-#SBATCH -o /work/jwalters/redkmer-hpc/simulateddatasets/complex/reports/%j_output.log
+#SBATCH -e ${CWD}/reports/redkmer1_%j_error.log
+#SBATCH -o ${CWD}/reports/redkmer1_%j_output.log
 
 echo "========== starting up step 1 =========="
 
@@ -19,7 +19,7 @@ mkdir -p $CWD/qsubscripts
 mkdir -p $CWD/QualityReports
 mkdir -p $CWD/plots
 mkdir -p $CWD/MitoIndex
-#mkdir -p $CWD/reports
+mkdir -p $CWD/reports
 
 echo "========== filtering pacBio libary by read length =========="
 
