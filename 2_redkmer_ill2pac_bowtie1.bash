@@ -20,6 +20,7 @@ mkdir -p $CWD/pacBio_bins/fasta
 echo "==================================== Generating pacBio data chunks ======================================="
 
 # cp $pacM $TMPDIR
+cp ${pacDIR}/m_pac.fasta $TMPDIR/m_pac.fasta  # may be unncessary on ITTC if tempdir is constant across modules
 grep -n ">" $TMPDIR/m_pac.fasta |cut -f1 -d: > ${pacDIR}/pacMsplitter
 READNpacM=$(cat ${pacDIR}/pacMsplitter | echo $((`wc -l`)))
 echo "Total number of reads $READNpacM !"
