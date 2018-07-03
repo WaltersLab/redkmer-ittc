@@ -23,7 +23,8 @@ mkdir -p $CWD/reports
 
 echo "========== filtering pacBio libary by read length =========="
 
-cp ${pacDIR}/raw_pac.fasta $TMPDIR
+# cp ${pacDIR}/raw_pac.fasta $TMPDIR
+cp ${pacM4} ${TMPDIR}/raw_pac.fasta
 $SAMTOOLS faidx $TMPDIR/raw_pac.fasta
 awk -v pl="$pac_length" -v plm="$pac_length_max" '{if($2>=pl && $2<=plm)print $1}' $TMPDIR/raw_pac.fasta.fai | xargs samtools faidx $TMPDIR/raw_pac.fasta > $TMPDIR/m_pac.fasta
 cp $TMPDIR/m_pac.fasta ${pacDIR}/m_pac.fasta
@@ -46,7 +47,8 @@ cat > ${CWD}/qsubscripts/femalemito.bashX <<EOF
 module load Bowtie2/2.2.9
 module load FastQC
 
-cp ${illDIR}/raw_f.fastq XXXXX/raw_f.fastq
+# cp ${illDIR}/raw_f.fastq XXXXX/raw_f.fastq
+cp $illF XXXXX/raw_f.fastq
 echo "========== producing quality report for female illumina library =========="
 $FASTQC XXXXX/raw_f.fastq -o ${CWD}/QualityReports
 echo "========== removing female illumina reads mapping to mitochondrial DNA =========="
@@ -68,7 +70,8 @@ cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 module load Bowtie2/2.2.9
 module load FastQC
 
-cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
+$cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
+cp $illM XXXXX/raw_m.fastq
 echo "========== producing quality report for male illumina library =========="
 $FASTQC XXXXX/raw_m.fastq -o ${CWD}/QualityReports
 echo "========== removing male illumina reads mapping to mitochondrial DNA =========="
