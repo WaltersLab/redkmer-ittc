@@ -19,7 +19,7 @@ mkdir -p $CWD/pacBio_bins/fasta
 
 echo "==================================== Generating pacBio data chunks ======================================="
 
-cp $pacM $TMPDIR
+# cp $pacM $TMPDIR
 grep -n ">" $TMPDIR/m_pac.fasta |cut -f1 -d: > ${pacDIR}/pacMsplitter
 READNpacM=$(cat ${pacDIR}/pacMsplitter | echo $((`wc -l`)))
 echo "Total number of reads $READNpacM !"
