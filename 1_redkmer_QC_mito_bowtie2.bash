@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -J redkmer1
 #SBATCH -t 70:00:00
-#SBATCH -c 20
-#SBATCH --mem=32G
+#SBATCH -c 8
+#SBATCH --mem=10G
 #SBATCH -e redkmer1_%j_error.log
 #SBATCH -o redkmer1_%j_output.log
 

@@ -2,7 +2,7 @@
 #SBATCH -J redkmer2
 #SBATCH -t 04:00:00
 #SBATCH -c 6
-#SBATCH --mem=10
+#SBATCH --mem=10G
 #SBATCH -e redkmer2_%j_error.log
 #SBATCH -o redkmer2_%j_output.log
 
