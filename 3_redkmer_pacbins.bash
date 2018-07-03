@@ -3,16 +3,16 @@
 #SBATCH -t 24:00:00
 #SBATCH -c 20
 #SBATCH --mem=120G
-#SBATCH -e ${CWD}/reports/redkmer3_%j_error.log
-#SBATCH -o ${CWD}/reports/redkmer3_%j_output.log
+#SBATCH -e redkmer3_%j_error.log
+#SBATCH -o redkmer3_%j_output.log
 
 source $SLURM_SUBMIT_DIR/redkmer.cfg
 module load SAMtools
 
 printf "======= merge all pacbio mappings  =======\n"
 
-cat $CWD/pacBio_illmapping/mapping_rawdata/*_female_uniq | awk '{print $2, $1}'> $CWD/pacBio_illmapping/mapping_rawdata/female_unsort
-cat $CWD/pacBio_illmapping/mapping_rawdata/*_male_uniq | awk '{print $2, $1}'> $CWD/pacBio_illmapping/mapping_rawdata/male_unsort
+cat $CWD/pacBio_illmapping/mapping_rawdata/*_female_uniq | awk '{print $1, $2}'> $CWD/pacBio_illmapping/mapping_rawdata/female_unsort
+cat $CWD/pacBio_illmapping/mapping_rawdata/*_male_uniq | awk '{print $1, $2}'> $CWD/pacBio_illmapping/mapping_rawdata/male_unsort
  
 time sort -k1b,1  -T $TMPDIR --buffer-size=$BUFFERSIZE $CWD/pacBio_illmapping/mapping_rawdata/female_unsort > $TMPDIR/female_uniq
 cp $TMPDIR/female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
@@ -26,8 +26,11 @@ rm $CWD/pacBio_illmapping/mapping_rawdata/*_unsort
 
 printf "======= calculating library sizes =======\n"
 
-illLIBMsize=$(wc -l $illM | awk '{print ($1/4)}')
-illLIBFsize=$(wc -l $illF | awk '{print ($1/4)}')
+# Should be using mt-filtered fastq files for getting library size, not originals
+# illLIBMsize=$(wc -l $illM | awk '{print ($1/4)}')
+illLIBMsize=$(wc -l ${illDIR}/m.fastq | awk '{print ($1/4)}')
+# illLIBFsize=$(wc -l $illF | awk '{print ($1/4)}')
+illLIBFsize=$(wc -l ${illDIR}/f.fastq | awk '{print ($1/4)}')
 illnorm=$((($illLIBMsize+$illLIBFsize)/2))
 
 printf " Male: "
@@ -56,8 +59,12 @@ rm $TMPDIR/tmpfile_2
 
 printf "======= calculating LSum (Sum/length of PBreads * median PBread length  =======\n"
 
-rm -f $pacM.fai
+rm -f $pacM.fai # this is probably meant to get rid of pre-filtering .fai, but is also moot if filtered data is in a different file, e.g. m_pac.fasta
+
+# should be using post-filtering pacbio reads, in m_pac.fasta, so update variable to use this file
+$pacM=${pacDIR}/m_pac.fasta
 $SAMTOOLS faidx $pacM
+
 awk '{print $1, $2}' $pacM.fai | sort -k1b,1 > $pacM.lengths
 join -a1 -a2 -1 1 -1 1 -o'0,2.2,1.2,1.3,1.4,1.5' -e "0" $TMPDIR/tmpfile_3 $pacM.lengths > $TMPDIR/tmpfile_4
 rm $TMPDIR/tmpfile_3

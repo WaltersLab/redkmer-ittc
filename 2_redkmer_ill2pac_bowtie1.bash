@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH -J redkmer2
 #SBATCH -t 04:00:00
-#SBATCH -c 12
-#SBATCH --mem=32G
-#SBATCH -e ${CWD}/reports/redkmer2_%j_error.log
-#SBATCH -o ${CWD}/reports/redkmer2_%j_output.log
+#SBATCH -c 6
+#SBATCH --mem=10
+#SBATCH -e redkmer2_%j_error.log
+#SBATCH -o redkmer2_%j_output.log
 
 source $SLURM_SUBMIT_DIR/redkmer.cfg
 module load slurm-torque
@@ -57,8 +57,8 @@ cat > ${CWD}/qsubscripts/pacbins.bashX <<EOF
 #!/bin/bash
 #SBATCH -J redkmer2B
 #SBATCH -t 18:00:00
-#SBATCH -c 12
-#SBATCH --mem=32G
+#SBATCH -c 8
+#SBATCH --mem=10G
 #SBATCH -e ${CWD}/reports/%j_error.log
 #SBATCH -o ${CWD}/reports/%j_output.log
 #SBATCH --array=1-${NODES}
@@ -76,7 +76,8 @@ module load GCC/6.2.0-2.27
 		#make
 
 	echo "==================================== Working on male chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
-		cp $illM XXXXXTMPDIR
+		# cp $illM XXXXXTMPDIR
+		cp ${illDIR}/m.fastq  XXXXXTMPDIR/m.fastq  # correcting so mt-filtered reads are used.
 		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/m.fastq 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
 		rm XXXXXTMPDIR/m.fastq
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
@@ -86,7 +87,8 @@ module load GCC/6.2.0-2.27
 	echo "==================================== Done male chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ===================================="
 
 	echo "==================================== Working on female chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
-		cp $illF XXXXXTMPDIR
+		# cp $illF XXXXXTMPDIR
+		cp ${illDIR}/f.fastq XXXXXTMPDIR   # correcting so mt-filtered reads are used.
 		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/f.fastq 1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
 		rm XXXXXTMPDIR/f.fastq
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
@@ -104,6 +106,6 @@ sed 's/XXXXX/$/g' ${CWD}/qsubscripts/pacbins.bashX > ${CWD}/qsubscripts/pacbins.
 
 qsub ${CWD}/qsubscripts/pacbins.bash
 
-rm -rf $TMPDIR
+#rm -rf $TMPDIR
 
 echo "==================================== Done step 2B! ======================================="
