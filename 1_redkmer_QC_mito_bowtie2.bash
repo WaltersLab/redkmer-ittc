@@ -3,8 +3,8 @@
 #SBATCH -t 70:00:00
 #SBATCH -c 20
 #SBATCH --mem=32G
-#SBATCH -e ${CWD}/reports/redkmer1_%j_error.log
-#SBATCH -o ${CWD}/reports/redkmer1_%j_output.log
+#SBATCH -e redkmer1_%j_error.log
+#SBATCH -o redkmer1_%j_output.log
 
 echo "========== starting up step 1 =========="
 
@@ -24,7 +24,7 @@ mkdir -p $CWD/reports
 echo "========== filtering pacBio libary by read length =========="
 
 # cp ${pacDIR}/raw_pac.fasta $TMPDIR
-cp ${pacM4} ${TMPDIR}/raw_pac.fasta
+cp ${pacM} ${TMPDIR}/raw_pac.fasta
 $SAMTOOLS faidx $TMPDIR/raw_pac.fasta
 awk -v pl="$pac_length" -v plm="$pac_length_max" '{if($2>=pl && $2<=plm)print $1}' $TMPDIR/raw_pac.fasta.fai | xargs samtools faidx $TMPDIR/raw_pac.fasta > $TMPDIR/m_pac.fasta
 cp $TMPDIR/m_pac.fasta ${pacDIR}/m_pac.fasta
@@ -39,8 +39,8 @@ cat > ${CWD}/qsubscripts/femalemito.bashX <<EOF
 #!/bin/bash
 #SBATCH -J redkmer_f_mito
 #SBATCH -t 20:00:00
-#SBATCH -c 20
-#SBATCH --mem=32G
+#SBATCH -c 8
+#SBATCH --mem=10G
 #SBATCH -e ${CWD}/reports/%j_error.log
 #SBATCH -o ${CWD}/reports/%j_output.log
 
@@ -62,8 +62,8 @@ cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 #!/bin/bash
 #SBATCH -J redkmer_m_mito
 #SBATCH -t 20:00:00
-#SBATCH -c 20
-#SBATCH --mem=32G
+#SBATCH -c 8
+#SBATCH --mem=10G
 #SBATCH -e ${CWD}/reports/%j_error.log
 #SBATCH -o ${CWD}/reports/%j_output.log
 
@@ -77,7 +77,7 @@ $FASTQC XXXXX/raw_m.fastq -o ${CWD}/QualityReports
 echo "========== removing male illumina reads mapping to mitochondrial DNA =========="
 $BOWTIE2 -p $CORES -x $CWD/MitoIndex/MtRef_bowtie2 -U XXXXX/raw_m.fastq --un XXXXX/m.fastq 1>/dev/null 2> ${illDIR}/m_bowtie2.log
 cp XXXXX/m.fastq ${illDIR}
-rm -rf XXXXX 
+#rm -rf XXXXX 
 EOF
 sed 's/XXXXX/$TMPDIR/g' ${CWD}/qsubscripts/malemito.bashX > ${CWD}/qsubscripts/malemito.bash
 qsub ${CWD}/qsubscripts/malemito.bash

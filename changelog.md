@@ -18,6 +18,11 @@ $cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
 cp $illM XXXXX/raw_m.fastq
 ```
 
+The qsub/sbatch command generated for aligning male fastq to the MtDNA has as its last step the deletion of the tmp directory. This is problematic because it is very possible that the female alignment is still running. For the timebeing, I'm just commenting it out, and allowing the tmpdir to persist.
+
+The original scripts called for 32G memory and 20 cores to run mitochondrial alignments. This seems like overkill, and greatly restricts where it will run on the ITTC resources, which don't have some many big cores.  I've reduced it to 10G and 8 cores, so it gets onto a node more quickly. 
+
+
 ## Module 2
 Module 2 starts out with a strange step, copying the original raw fasta into the $TMPDIR. This seems to have no purpose, because the code proceeds to operate on the filtered data file, which is hard-coded as m_pac.fasta. I think this is an error, because m_pac.fasta wouldn't exist in a new tmp directory. It just happens that the default configuration file has the "raw" pacbio data file defined as m_pac.fas in the configuration, and hard-coded "raw_pac.fasta" in module 1 to get the original data into play.
   
