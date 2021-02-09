@@ -70,7 +70,7 @@ cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 module load Bowtie2/2.2.9
 module load FastQC
 
-$cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
+# cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
 cp $illM XXXXX/raw_m.fastq
 echo "========== producing quality report for male illumina library =========="
 $FASTQC XXXXX/raw_m.fastq -o ${CWD}/QualityReports
