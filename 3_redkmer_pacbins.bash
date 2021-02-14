@@ -62,7 +62,7 @@ printf "======= calculating LSum (Sum/length of PBreads * median PBread length  
 rm -f $pacM.fai # this is probably meant to get rid of pre-filtering .fai, but is also moot if filtered data is in a different file, e.g. m_pac.fasta
 
 # should be using post-filtering pacbio reads, in m_pac.fasta, so update variable to use this file
-$pacM=${pacDIR}/m_pac.fasta
+pacM=${pacDIR}/m_pac.fasta
 $SAMTOOLS faidx $pacM
 
 awk '{print $1, $2}' $pacM.fai | sort -k1b,1 > $pacM.lengths
