@@ -31,6 +31,7 @@ awk -v pl="$pac_length" -v plm="$pac_length_max" '{if($2>=pl && $2<=plm)print $1
 cp $TMPDIR/m_pac.fasta ${pacDIR}/m_pac.fasta
 rm $TMPDIR/m_pac.fasta
 rm $TMPDIR/raw_pac.fasta
+rm $TMPDIR/raw_pac.fasta.fai
 
 echo "========== building mitochondiral index =========="
 

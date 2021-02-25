@@ -6,7 +6,7 @@
 #SBATCH -e redkmer2_%j_error.log
 #SBATCH -o redkmer2_%j_output.log
 
-source $SLURM_SUBMIT_DIR/redkmer.cfg
+source $SLURM_SUBMIT_DIR/redkmer_mod.cfg
 module load slurm-torque
 
 mkdir -p $CWD/pacBio_illmapping
@@ -38,13 +38,13 @@ for i in $(eval echo "{1..$NODES}")
 	
 	if [ "$i" -eq "$NODES" ];
 		then
-		ACTUALEND=$(wc -l $TMPDIR/m_pac.fasta | awk '{print $1}')
+		ACTUALEND=$(wc -l ${pacDIR}/m_pac.fasta | awk '{print $1}')
 		ACTUALEND=$(($ACTUALEND+1))
 		echo $ACTUALEND
 	else
 		echo "next.."
 	fi
-	sed -n "$ACTUALSTART,$(($ACTUALEND-1))"p $TMPDIR/m_pac.fasta > ${pacDIR}/${i}_m_pac.fasta
+	sed -n "$ACTUALSTART,$(($ACTUALEND-1))"p ${pacDIR}/m_pac.fasta > ${pacDIR}/${i}_m_pac.fasta
 
 	READSTART=$(($READSTART + $READNUNIT))
 	READEND=$(($READEND + $READNUNIT))
