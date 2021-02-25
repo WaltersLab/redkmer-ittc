@@ -63,7 +63,7 @@ cat > ${CWD}/qsubscripts/pacbins.bashX <<EOF
 #SBATCH -o ${CWD}/reports/%j_output.log
 #SBATCH --array=1-${NODES}
 
-source $SLURM_SUBMIT_DIR/redkmer.cfg
+source $SLURM_SUBMIT_DIR/redkmer_mod.cfg
 
 module load Bowtie/1.1.2
 module load GCC/6.2.0-2.27
@@ -79,7 +79,7 @@ module load GCC/6.2.0-2.27
 		# cp $illM XXXXXTMPDIR
 		# cp ${illDIR}/m.fastq  XXXXXTMPDIR/m.fastq  # correcting so mt-filtered reads are used. #JRW: don't copy. use single source
 		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 ${illDIR}/m.fastq.gz 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
-		rm XXXXXTMPDIR/m.fastq
+		# rm XXXXXTMPDIR/m.fastq
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
 		${BASEDIR}/Cscripts/count XXXXXTMPDIR/male.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
 		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq $CWD/pacBio_illmapping/mapping_rawdata/
@@ -90,7 +90,7 @@ module load GCC/6.2.0-2.27
 		# cp $illF XXXXXTMPDIR
 		# cp ${illDIR}/f.fastq XXXXXTMPDIR   # correcting so mt-filtered reads are used. # JRW: don't copy, use single source
 		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 ${illDIR}/f.fastq.gz  1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
-		rm XXXXXTMPDIR/f.fastq
+		# rm XXXXXTMPDIR/f.fastq
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
 		${BASEDIR}/Cscripts/count XXXXXTMPDIR/female.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq
 		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
