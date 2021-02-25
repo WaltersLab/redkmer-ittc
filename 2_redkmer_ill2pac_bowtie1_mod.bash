@@ -65,7 +65,7 @@ cat > ${CWD}/qsubscripts/pacbins.bashX <<EOF
 
 source $SLURM_SUBMIT_DIR/redkmer_mod.cfg
 
-module load Bowtie/1.1.2
+module load Bowtie/1.2.2
 module load GCC/6.2.0-2.27
 
 	echo "==================================== Indexing chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
