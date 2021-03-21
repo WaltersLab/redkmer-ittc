@@ -12,7 +12,7 @@ echo "========== starting up step 1 =========="
 source $SLURM_SUBMIT_DIR/redkmer_mod.cfg
 module load Bowtie2/2.2.9
 module load SAMtools
-module load slurm-torque
+# module load slurm-torque
 
 echo "========== setting up directories =========="
 
@@ -62,7 +62,7 @@ $BOWTIE2 -p $CORES -x ${CWD}/MitoIndex/MtRef_bowtie2 -U $illF --un-gz ${illDIR}/
 
 EOF
 sed 's/XXXXX/$TMPDIR/g' ${CWD}/qsubscripts/femalemito.bashX > ${CWD}/qsubscripts/femalemito.bash
-qsub ${CWD}/qsubscripts/femalemito.bash
+sbatch  ${CWD}/qsubscripts/femalemito.bash
 
 cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 #!/bin/bash
@@ -86,7 +86,7 @@ $BOWTIE2 -p $CORES -x $CWD/MitoIndex/MtRef_bowtie2 -U $illM --un-gz ${illDIR}/m.
 #rm -rf XXXXX 
 EOF
 sed 's/XXXXX/$TMPDIR/g' ${CWD}/qsubscripts/malemito.bashX > ${CWD}/qsubscripts/malemito.bash
-qsub ${CWD}/qsubscripts/malemito.bash
+sbatch ${CWD}/qsubscripts/malemito.bash
 
 printf "======= Done step 1 =======\n"
 
