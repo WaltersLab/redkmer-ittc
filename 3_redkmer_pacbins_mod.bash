@@ -3,6 +3,7 @@
 #SBATCH -t 24:00:00
 #SBATCH -c 20
 #SBATCH --mem=120G
+#SBATCH --tmp=500G
 #SBATCH -e redkmer3_%j_error.log
 #SBATCH -o redkmer3_%j_output.log
 
@@ -108,12 +109,12 @@ printf "======= generating pacBio_MappedReads.txt file  =======\n"
 
 awk 'BEGIN {print "pacbio_read\tbp\tfemale\tmale\tCQ\tSum\tLSum"} {print}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_illmapping/pacBio_MappedReads.txt
 
-printf "======= creating chromosomal bins of pacbio reads =======\n"
+# printf "======= creating chromosomal bins of pacbio reads =======\n"
 
-awk -v xmin="$xmin" -v xmax="$xmax" '{if($5>=xmin && $5<xmax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/X_reads
-awk -v xmin="$xmin" -v ymax="$ymax" '{if($5<xmin && $5>ymax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/A_reads
-awk -v ymax="$ymax" '{if ($5<=ymax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/Y_reads
-awk -v xmax="$xmax" '{if($5>=xmax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/GA_reads
+# awk -v xmin="$xmin" -v xmax="$xmax" '{if($5>=xmin && $5<xmax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/X_reads
+# awk -v xmin="$xmin" -v ymax="$ymax" '{if($5<xmin && $5>ymax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/A_reads
+# awk -v ymax="$ymax" '{if ($5<=ymax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/Y_reads
+# awk -v xmax="$xmax" '{if($5>=xmax) print $1}' $CWD/pacBio_illmapping/mapping_rawdata/merge > $CWD/pacBio_bins/GA_reads
 
 # Get sequences of pacBio bins
 
