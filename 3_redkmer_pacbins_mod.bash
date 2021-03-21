@@ -3,7 +3,6 @@
 #SBATCH -t 24:00:00
 #SBATCH -c 20
 #SBATCH --mem=120G
-#SBATCH --tmp=500G
 #SBATCH -e redkmer3_%j_error.log
 #SBATCH -o redkmer3_%j_output.log
 
