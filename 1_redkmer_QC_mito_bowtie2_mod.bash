@@ -44,8 +44,8 @@ cat > ${CWD}/qsubscripts/femalemito.bashX <<EOF
 #SBATCH -t 20:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
-#SBATCH -e ${CWD}/reports/%j_error.log
-#SBATCH -o ${CWD}/reports/%j_output.log
+#SBATCH -e ${CWD}/reports/redk_f_mito_%j_error.log
+#SBATCH -o ${CWD}/reports/redk_f_mito_%j_output.log
 
 
 module load Bowtie2/2.2.9
@@ -70,8 +70,8 @@ cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 #SBATCH -t 20:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
-#SBATCH -e ${CWD}/reports/%j_error.log
-#SBATCH -o ${CWD}/reports/%j_output.log
+#SBATCH -e ${CWD}/reports/redk_m_mito_%j_error.log
+#SBATCH -o ${CWD}/reports/redk_m_mito_%j_output.log
 
 module load Bowtie2/2.2.9
 #module load FastQC
