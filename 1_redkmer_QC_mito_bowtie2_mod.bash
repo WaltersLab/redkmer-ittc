@@ -3,6 +3,7 @@
 #SBATCH -t 70:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
+#SBATCH --tmp=200G
 #SBATCH -e redkmer1_%j_error.log
 #SBATCH -o redkmer1_%j_output.log
 
@@ -29,9 +30,7 @@ pigz -p $CORES -dc ${pacM} > ${TMPDIR}/raw_pac.fasta
 $SAMTOOLS faidx $TMPDIR/raw_pac.fasta
 awk -v pl="$pac_length" -v plm="$pac_length_max" '{if($2>=pl && $2<=plm)print $1}' $TMPDIR/raw_pac.fasta.fai | xargs samtools faidx $TMPDIR/raw_pac.fasta > $TMPDIR/m_pac.fasta
 cp $TMPDIR/m_pac.fasta ${pacDIR}/m_pac.fasta
-rm $TMPDIR/m_pac.fasta
-rm $TMPDIR/raw_pac.fasta
-rm $TMPDIR/raw_pac.fasta.fai
+rm -rf $TMPDIR   # clean up here. don't need tmpdir sub-scripts below, as edited, because reading/writing in place to panassis
 
 echo "========== building mitochondiral index =========="
 
@@ -41,15 +40,16 @@ echo "========== filtering for mitochondiral reads =========="
 
 cat > ${CWD}/qsubscripts/femalemito.bashX <<EOF
 #!/bin/bash
-#SBATCH -J redkmer_f_mito
+#SBATCH -J redk_f_mito
 #SBATCH -t 20:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
 #SBATCH -e ${CWD}/reports/%j_error.log
 #SBATCH -o ${CWD}/reports/%j_output.log
 
+
 module load Bowtie2/2.2.9
-module load FastQC
+#module load FastQC
 
 # cp ${illDIR}/raw_f.fastq XXXXX/raw_f.fastq
 # cp $illF XXXXX/raw_f.fastq  #JRW: no need to copy this to temp, just read directly from original
@@ -66,7 +66,7 @@ qsub ${CWD}/qsubscripts/femalemito.bash
 
 cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 #!/bin/bash
-#SBATCH -J redkmer_m_mito
+#SBATCH -J redk_m_mito
 #SBATCH -t 20:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
@@ -74,7 +74,7 @@ cat > ${CWD}/qsubscripts/malemito.bashX <<EOF
 #SBATCH -o ${CWD}/reports/%j_output.log
 
 module load Bowtie2/2.2.9
-module load FastQC
+#module load FastQC
 
 # cp ${illDIR}/raw_m.fastq XXXXX/raw_m.fastq
 # cp $illM XXXXX/raw_m.fastq
