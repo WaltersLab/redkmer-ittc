@@ -1,13 +1,14 @@
 #!/bin/bash
 #SBATCH -J redkmer2
-#SBATCH -t 04:00:00
-#SBATCH -c 6
+#SBATCH -t 10:00:00
+#SBATCH -c 8
 #SBATCH --mem=10G
+#SBATCH --tmp=500G
 #SBATCH -e redkmer2_%j_error.log
 #SBATCH -o redkmer2_%j_output.log
 
 source $SLURM_SUBMIT_DIR/redkmer_mod.cfg
-module load slurm-torque
+# module load slurm-torque  
 
 mkdir -p $CWD/pacBio_illmapping
 mkdir -p $CWD/pacBio_illmapping/logs
@@ -56,11 +57,12 @@ echo "==================================== Done step 2A! =======================
 cat > ${CWD}/qsubscripts/pacbins.bashX <<EOF
 #!/bin/bash
 #SBATCH -J redkmer2B
-#SBATCH -t 18:00:00
+#SBATCH -t 80:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
-#SBATCH -e ${CWD}/reports/%j_error.log
-#SBATCH -o ${CWD}/reports/%j_output.log
+#SBATCH --tmp=500G
+#SBATCH -e ${CWD}/reports/redkarray_%j_error.log
+#SBATCH -o ${CWD}/reports/redkarray_%j_output.log
 #SBATCH --array=1-${NODES}
 
 source $SLURM_SUBMIT_DIR/redkmer_mod.cfg
@@ -69,28 +71,33 @@ module load Bowtie/1.2.2
 module load GCC/6.2.0-2.27
 
 	echo "==================================== Indexing chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
-		cp ${pacDIR}/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR
+		cp ${pacDIR}/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR  # copy chunk to tmpdir
 		$BOWTIEB XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac
-	echo "==================================== make counting tool ======================================="	
+
+	#echo "==================================== make counting tool ======================================="	
 		#cp ${BASEDIR}/Cscripts/* XXXXXTMPDIR
 		#make
 
 	echo "==================================== Working on male chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
-		# cp $illM XXXXXTMPDIR
-		# cp ${illDIR}/m.fastq  XXXXXTMPDIR/m.fastq  # correcting so mt-filtered reads are used. #JRW: don't copy. use single source
-		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 ${illDIR}/m.fastq.gz 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
-		# rm XXXXXTMPDIR/m.fastq
+
+		cp ${illDIR}/m.fastq.gz  XXXXXTMPDIR/m.fastq.gz   
+		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v $VVAL XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/m.fastq.gz 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
+		rm XXXXXTMPDIR/m.fastq.gz  # clean up
+
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
+
 		${BASEDIR}/Cscripts/count XXXXXTMPDIR/male.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
 		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq $CWD/pacBio_illmapping/mapping_rawdata/
 		rm XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
+	
 	echo "==================================== Done male chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ===================================="
 
 	echo "==================================== Working on female chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
 		# cp $illF XXXXXTMPDIR
-		# cp ${illDIR}/f.fastq XXXXXTMPDIR   # correcting so mt-filtered reads are used. # JRW: don't copy, use single source
-		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v 0 XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 ${illDIR}/f.fastq.gz  1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
-		# rm XXXXXTMPDIR/f.fastq
+		cp ${illDIR}/f.fastq.gz XXXXXTMPDIR/f.fastq.gz   # correcting so mt-filtered reads are used. # JRW: don't copy, use single source
+		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v $VVAL XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/f.fastq.gz  1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
+		rm XXXXXTMPDIR/f.fastq.gz # clean up
+
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
 		${BASEDIR}/Cscripts/count XXXXXTMPDIR/female.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq
 		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
@@ -104,7 +111,7 @@ echo "==================================== Done step 2B chunk XXXXX{SLURM_ARRAY_
 EOF
 sed 's/XXXXX/$/g' ${CWD}/qsubscripts/pacbins.bashX > ${CWD}/qsubscripts/pacbins.bash
 
-qsub ${CWD}/qsubscripts/pacbins.bash
+sbatch ${CWD}/qsubscripts/pacbins.bash
 
 #rm -rf $TMPDIR
 
