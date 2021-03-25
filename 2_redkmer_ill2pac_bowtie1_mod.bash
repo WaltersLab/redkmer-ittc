@@ -3,7 +3,7 @@
 #SBATCH -t 10:00:00
 #SBATCH -c 8
 #SBATCH --mem=10G
-#SBATCH --tmp=500G
+#SBATCH --tmp=150G
 #SBATCH -e redkmer2_%j_error.log
 #SBATCH -o redkmer2_%j_output.log
 
@@ -59,8 +59,8 @@ cat > ${CWD}/qsubscripts/pacbins.bashX <<EOF
 #SBATCH -J redkmer2B
 #SBATCH -t 80:00:00
 #SBATCH -c 8
-#SBATCH --mem=10G
-#SBATCH --tmp=500G
+#SBATCH --mem=60G
+#SBATCH --tmp=150G
 #SBATCH -e ${CWD}/reports/redkarray_%j_error.log
 #SBATCH -o ${CWD}/reports/redkarray_%j_output.log
 #SBATCH --array=1-${NODES}
@@ -72,36 +72,55 @@ module load GCC/6.2.0-2.27
 
 	echo "==================================== Indexing chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
 		cp ${pacDIR}/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR  # copy chunk to tmpdir
-		$BOWTIEB XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac
+		/usr/bin/time -v $BOWTIEB --threads $SLURM_CPUS_PER_TASK XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac.fasta XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac
 
 	#echo "==================================== make counting tool ======================================="	
 		#cp ${BASEDIR}/Cscripts/* XXXXXTMPDIR
 		#make
 
 	echo "==================================== Working on male chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
+	echo "Disk usage & memory prior to aligning male chunk"
+		du -sh /tmp 
+		/usr/bin/free -h
 
 		cp ${illDIR}/m.fastq.gz  XXXXXTMPDIR/m.fastq.gz   
-		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v $VVAL XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/m.fastq.gz 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
+		/usr/bin/time -v $BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v $VVAL XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/m.fastq.gz 1> XXXXXTMPDIR/male.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_male_log.txt
 		rm XXXXXTMPDIR/m.fastq.gz  # clean up
+	
+	echo "Disk usage & memory after to aligning male chunk"
+		du -sh /tmp
+		/usr/bin/free -h
 
 	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
 
-		${BASEDIR}/Cscripts/count XXXXXTMPDIR/male.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
+		/usr/bin/time -v ${BASEDIR}/Cscripts/count XXXXXTMPDIR/male.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
 		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq $CWD/pacBio_illmapping/mapping_rawdata/
 		rm XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_male_uniq
+	echo "Disk usage counting male chunk"
+		du -sh /tmp
 	
 	echo "==================================== Done male chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ===================================="
 
 	echo "==================================== Working on female chunk XXXXX{SLURM_ARRAY_TASK_ID} ======================================="
-		# cp $illF XXXXXTMPDIR
-		cp ${illDIR}/f.fastq.gz XXXXXTMPDIR/f.fastq.gz   # correcting so mt-filtered reads are used. # JRW: don't copy, use single source
-		$BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v $VVAL XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/f.fastq.gz  1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
-		rm XXXXXTMPDIR/f.fastq.gz # clean up
+	echo "Disk usage & memory prior to aligning female chunk"
+		du -sh /tmp 	
+		/usr/bin/free
 
-	echo "==================================== Counting, sorting for male chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
+		cp ${illDIR}/f.fastq.gz XXXXXTMPDIR/f.fastq.gz   # correcting so mt-filtered reads are used. # JRW: don't copy, use single source
+		/usr/bin/time -v $BOWTIE -a -t -5 ${TRIMM5} -3 ${TRIMM3} -p $ARRAYCORES -v $VVAL XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_m_pac --suppress 1,2,4,5,6,7,8,9 XXXXXTMPDIR/f.fastq.gz  1> XXXXXTMPDIR/female.txt 2> $CWD/pacBio_illmapping/logs/XXXXX{SLURM_ARRAY_TASK_ID}_female_log.txt
+		rm XXXXXTMPDIR/f.fastq.gz # clean up
+	echo "Disk usage & memory after to aligning female chunk"
+		du -sh /tmp
+		/usr/bin/free -h
+
+	echo "==================================== Counting, sorting for female chunck XXXXX{SLURM_ARRAY_TASK_ID} ===================================="
 		${BASEDIR}/Cscripts/count XXXXXTMPDIR/female.txt > XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq
-		cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
+		/usr/bin/time -v cp XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq $CWD/pacBio_illmapping/mapping_rawdata/
 		rm XXXXXTMPDIR/XXXXX{SLURM_ARRAY_TASK_ID}_female_uniq
+	echo "Disk usage & memory counting female chunk"
+		du -sh /tmp
+		/usr/bin/free -h
+
 		rm -rf XXXXXTMPDIR 
 	echo "==================================== Done female chunk XXXXX{SLURM_ARRAY_TASK_ID} ! ===================================="
 
